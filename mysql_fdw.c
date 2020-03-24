@@ -638,9 +638,11 @@ mysqlIterateForeignScan(ForeignScanState *node)
 	int                 attid = 0;
 	ListCell            *lc = NULL;
 	int                 rc = 0;
+	Datum               *tupleSlot_tts_values = slot_get_values(tupleSlot);
+	bool                *tupleSlot_tts_isnull = slot_get_isnull(tupleSlot);
 
-	memset (tupleSlot->tts_values, 0, sizeof(Datum) * tupleDescriptor->natts);
-	memset (tupleSlot->tts_isnull, true, sizeof(bool) * tupleDescriptor->natts);
+	memset (tupleSlot_tts_values, 0, sizeof(Datum) * tupleDescriptor->natts);
+	memset (tupleSlot_tts_isnull, true, sizeof(bool) * tupleDescriptor->natts);
 
 	ExecClearTuple(tupleSlot);
 
@@ -654,9 +656,9 @@ mysqlIterateForeignScan(ForeignScanState *node)
 			Oid pgtype = TupleDescAttr(tupleDescriptor, attnum)->atttypid;
 			int32 pgtypmod = TupleDescAttr(tupleDescriptor, attnum)->atttypmod;
 
-			tupleSlot->tts_isnull[attnum] = festate->table->column[attid].is_null;
+			tupleSlot_tts_isnull[attnum] = festate->table->column[attid].is_null;
 			if (!festate->table->column[attid].is_null)
-				tupleSlot->tts_values[attnum] = mysql_convert_to_pg(pgtype, pgtypmod,
+				tupleSlot_tts_values[attnum] = mysql_convert_to_pg(pgtype, pgtypmod,
                                                                     &festate->table->column[attid]);
 
 			attid++;
